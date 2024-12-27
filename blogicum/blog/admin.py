@@ -1,44 +1,50 @@
 from django.contrib import admin
 
-from .models import Category, Location, Post
+from .models import Category, Location, Post, Comment
 
 
-class PostInline(admin.StackedInline):
-    model = Post
-    extra = 0
-
-
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    inlines = (
-        PostInline,
-    )
-
-
-@admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    inlines = (
-        PostInline,
+    list_display = (
+        "name",
+        "is_published",
+        "created_at",
     )
+    list_editable = ("is_published",)
 
 
-@admin.register(Post)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "description",
+        "slug",
+        "is_published",
+        "created_at",
+    )
+    list_editable = ("is_published",)
+
+
 class PostAdmin(admin.ModelAdmin):
     list_display = (
-        'title',
-        'text',
-        'pub_date',
-        'author',
-        'location',
-        'category',
-        'is_published',
-        'created_at'
+        "title",
+        "author",
+        "category",
+        "location",
+        "is_published",
+        "pub_date",
+        "comment_count",
     )
-    list_editable = (
-        'is_published',
-        'category',
-        'pub_date'
+    list_editable = ("is_published",)
+    list_filter = (
+        "category",
+        "location",
     )
-    search_fields = ('title',)
-    list_filter = ('category',)
-    list_display_links = ('title',)
+
+    @admin.display(description="Комментариев")
+    def comment_count(self, post):
+        return post.comments.count()
+
+
+admin.site.register(Post, PostAdmin)
+admin.site.register(Location, LocationAdmin)
+admin.site.register(Category, CategoryAdmin)
+admin.site.register(Comment)
