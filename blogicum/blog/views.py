@@ -71,10 +71,19 @@ class PostDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['post'] = self.object
+        post = self.object  # Получаем пост
+        user = self.request.user  # Получаем текущего пользователя
+
+        # Проверка: если пост не опубликован и пользователь не является автором
+        if not post.is_published and post.author != user:
+            # Возвращаем ошибку 404 или редирект на другую страницу
+            return redirect('blog:post_list')  # Например, редирект на список постов
+
+        context['post'] = post
         context['form'] = CommentForm()
-        context['comments'] = self.object.comments.select_related('post')
+        context['comments'] = post.comments.select_related('post')
         return context
+
 
 
 class PostUpdateView(PostChangeMixin, UpdateView):
